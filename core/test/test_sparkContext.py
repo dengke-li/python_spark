@@ -3,7 +3,7 @@ def test1():
     sc = sparkContext()
     # rdd = sc.textfromfile('/home/ubuntu',6)
     list = [2,3,4,5]
-    rdd = sc.paralize(list,2)
+    rdd = sc.parallelize(list,2)
 
     def a(x):
         return x+1

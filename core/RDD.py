@@ -1,9 +1,9 @@
 
 class RDD:
-    def __init__(self, seq, nbsplit):
+    def __init__(self, sc, splits):
         self.nb_line = 0
-        self.seq = seq
-        self.nbsplit = nbsplit
+        self.splits = splits
+        self.sc = sc
         pass
     ## transformation should not do the execution, ie: lazy evaluation, just return back a object with all data
     ## and method to calculate, then it is later steps will decide to call these method or not
@@ -12,7 +12,7 @@ class RDD:
         # return RDD(newlist)
         ## return MappedRDD(self.seq, function) ## here you can pass seq, but more clever is pass the object,
                                                ## then you can get more information
-        return MappedRDD(self, function, self.nbsplit)
+        return MappedRDD(self, self.sc, function, self.splits)
 
     def filter(self, function):
         return RDD()
@@ -24,7 +24,7 @@ class RDD:
             while(iterator.hasnext):
                 length +=1
             return length
-        return sum(self.compute(count_f, self.nbsplit))
+        return sum(self.compute(count_f, self.splits))
 
     def take(self, n):
         def take_f(iterator):
@@ -35,36 +35,38 @@ class RDD:
                 if length==n:
                     return
 
-        list_of_list = self.compute(take_f, self.nbsplit, True)
+        list_of_list = self.compute(take_f, self.splits, True)
 
         #return self.collect()[:n] ## here you can see if the compute result is iterator, then take method() don't need to first call collect
 
-    def compute(self,action_f, nbsplit, scan_onebyone=False):
+    def compute(self):
         pass
 
     def collect(self):
         #return self.seq
         def collect_f(iterator):
             return iterator
-        list_of_list = self.compute(collect_f,self.nbsplit)
+        list_of_list = self.sc.runjob(self, collect_f)
+        print(123)
+        print(list_of_list)
         return sum(list_of_list, []) ## concatenate list of list
 
 
-class MappedRDD(RDD):
-    def __init__(self,rdd,f,nbsplit):
-        self.prev = rdd
-        self.f = f
-        self.nbsplit = nbsplit
+class parallelizeRDD(RDD):
+    def compute(self):
+        result = []
+        return self.splits
 
-    def compute(self,action_f, nbsplit, scan_onebyone=False):## here merge the mapping function f and action function
-        #  together, in face, we should use sc.runjob to use the call action function, and let here only focus on the mapping part
-        if scan_onebyone:
-            newlist = []
-        else:
-            partitions = []
-            interval = len(self.prev.seq)//nbsplit
-            for i in range(nbsplit):
-                partitions.append(self.prev.seq[i*interval:interval*i+interval])
-            newlist = [[action_f(self.f(e)) for e in partlist] for partlist in partitions]
-        print(newlist)
-        return newlist
+
+class MappedRDD(RDD):
+    def __init__(self, rdd, sc, f, splits):
+        self.prev = rdd
+        self.sc = sc
+        self.f = f
+        self.splits = splits
+
+    def compute(self):
+        result = []
+        for split in self.prev.compute():
+            result.append(list(map(self.f, split)))
+        return result
