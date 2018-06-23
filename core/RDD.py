@@ -15,27 +15,27 @@ class RDD:
         return MappedRDD(self, self.sc, function, self.splits)
 
     def filter(self, function):
-        return RDD()
+        return FilterRDD(self, self.sc, function, self.splits)
 
-    def count(self):
-        #return len(self.seq)
-        def count_f(iterator): ## here should be action on each split data
-            length = 0
-            while(iterator.hasnext):
-                length +=1
-            return length
-        return sum(self.compute(count_f, self.splits))
-
-    def take(self, n):
-        def take_f(iterator):
-            #for p in range(self.nbsplit)
-            length = 0
-            while iterator.hasnext:
-                length +=1
-                if length==n:
-                    return
-
-        list_of_list = self.compute(take_f, self.splits, True)
+    # def count(self):
+    #     #return len(self.seq)
+    #     def count_f(iterator): ## here should be action on each split data
+    #         length = 0
+    #         while(iterator.hasnext):
+    #             length +=1
+    #         return length
+    #     return sum(self.compute(count_f, self.splits))
+    #
+    # def take(self, n):
+    #     def take_f(iterator):
+    #         #for p in range(self.nbsplit)
+    #         length = 0
+    #         while iterator.hasnext:
+    #             length +=1
+    #             if length==n:
+    #                 return
+    #
+    #     list_of_list = self.compute(take_f, self.splits, True)
 
         #return self.collect()[:n] ## here you can see if the compute result is iterator, then take method() don't need to first call collect
     ## result is list of list, same for different RDD
@@ -65,8 +65,16 @@ class MappedRDD(RDD):
         self.f = f
         self.splits = splits
 
-    def compute(self):
-        result = []
-        for split in self.prev.compute():
-            result.append(list(map(self.f, split)))
-        return result
+    def compute(self, split):
+        return list(map(self.f, split))
+
+class FilterRDD(RDD):
+    def __init__(self, rdd, sc, f, splits):
+        self.prev = rdd
+        self.sc = sc
+        self.f = f
+        self.splits = splits
+
+    def compute(self, split):
+
+        return [e for e in split if self.f(e)]

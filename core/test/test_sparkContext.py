@@ -8,6 +8,9 @@ def test1():
     def a(x):
         return x+1
     rdd = rdd.map(a)
+    def b(x):
+        return x>3
+    rdd = rdd.filter(b)
     #r = rdd.count()
     r = rdd.collect()
     print(r)
