@@ -53,9 +53,9 @@ class RDD:
 
 
 class parallelizeRDD(RDD):
-    def compute(self):
+    def compute(self, split):
         result = []
-        return self.splits
+        return split
 
 
 class MappedRDD(RDD):
@@ -66,7 +66,7 @@ class MappedRDD(RDD):
         self.splits = splits
 
     def compute(self, split):
-        return list(map(self.f, split))
+        return list(map(self.f, self.prev.compute(split)))
 
 class FilterRDD(RDD):
     def __init__(self, rdd, sc, f, splits):
@@ -77,4 +77,4 @@ class FilterRDD(RDD):
 
     def compute(self, split):
 
-        return [e for e in split if self.f(e)]
+        return [e for e in self.prev.compute(split) if self.f(e)]

@@ -25,6 +25,8 @@ class sparkContext:
             result = []
         else:
             partitions = range(len(rdd.splits))
+            print('start')
+            print(rdd.splits)
             result = self.scheduler.runJob(rdd, func, partitions, allowLocal=True)
             # rdd.splits
             # interval = len(rdd.prev.seq)//nbsplit

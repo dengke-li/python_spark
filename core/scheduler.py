@@ -7,5 +7,6 @@ class scheduler:
         for partition in partitions:
             print(partition)
             split = rdd.splits[partition]
+            print(split)
             result.append(rdd.compute(split))
         return result
