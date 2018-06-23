@@ -38,7 +38,7 @@ class RDD:
         list_of_list = self.compute(take_f, self.splits, True)
 
         #return self.collect()[:n] ## here you can see if the compute result is iterator, then take method() don't need to first call collect
-
+    ## result is list of list, same for different RDD
     def compute(self):
         pass
 
