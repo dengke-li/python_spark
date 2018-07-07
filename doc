@@ -1,0 +1,11 @@
+version 19juin2018
+
+this version problem is don't use lazy evaluation
+
+version 23juin2018
+
+finalrdd.collect() => sc.runjob=>scheduler.runjob=>finalrdd.compute()=>parentrdd.compute()=>firstrdd.compute() here each compute() result is list of list applying the f to pre rdd's compute result
+
+later on we should let each transformation's compute() only compute one split, and the list of split should let scheduler to manage
+
+
